@@ -100,6 +100,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .grid-artist { font-size: 11px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* SCORE COLORS */
+  
+function getScoreClass(score) {
+  if (score === null || score === undefined) return 's-none';
+  if (score >= 9) return 's-excellent';
+  if (score >= 7.5) return 's-good';
+  if (score >= 6) return 's-ok';
+  return 's-low';
+}
+  
 /* Nouvelles nuances de couleurs basées sur tes critères */
 .s-9-plus { color: #0E5E44; font-weight: 800; } /* Vert foncé */
 .s-8-9    { color: #1D9E75; }                  /* Vert */
