@@ -100,32 +100,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .grid-artist { font-size: 11px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* SCORE COLORS */
-  
-function getScoreClass(score) {
-  if (score === null || score === undefined) return 's-none';
-  if (score >= 9) return 's-excellent';
-  if (score >= 7.5) return 's-good';
-  if (score >= 6) return 's-ok';
-  return 's-low';
-}
-  
-/* Nouvelles nuances de couleurs basées sur tes critères */
-.s-9-plus { color: #0E5E44; font-weight: 800; } /* Vert foncé */
-.s-8-9    { color: #1D9E75; }                  /* Vert */
-.s-7-8    { color: #82C91E; }                  /* Vert clair */
-.s-6-7    { color: #FAB005; }                  /* Jaune */
-.s-5-6    { color: #FD7E14; }                  /* Orange */
-.s-4-5    { color: #E8590C; }                  /* Orange foncé */
-.s-below-4 { color: #A32D2D; }                 /* Rouge */
-
-/* Adaptations pour les barres de progression */
-.bar-9-plus { background: #0E5E44; }
-.bar-8-9    { background: #1D9E75; }
-.bar-7-8    { background: #82C91E; }
-.bar-6-7    { background: #FAB005; }
-.bar-5-6    { background: #FD7E14; }
-.bar-4-5    { background: #E8590C; }
-.bar-below-4 { background: #A32D2D; }
+.s-excellent { color: var(--green); }
+.s-good { color: var(--accent); }
+.s-ok { color: var(--amber); }
+.s-low { color: var(--red); }
+.s-none { color: var(--text3); }
+.bar-excellent { background: var(--green); }
+.bar-good { background: var(--accent); }
+.bar-ok { background: var(--amber); }
+.bar-low { background: var(--red); }
 
 /* ADD BTN */
 .add-btn { position: fixed; bottom: 24px; right: 24px; background: var(--accent); color: white; border: none; border-radius: 50%; width: 52px; height: 52px; font-size: 26px; cursor: pointer; box-shadow: 0 4px 16px rgba(94,67,206,0.4); display: flex; align-items: center; justify-content: center; transition: transform 0.15s; z-index: 200; line-height: 1; }
