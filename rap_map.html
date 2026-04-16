@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rap World Map — The Dictionary of Rap</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body.dark{background:#0a0a0a}
+body.light{background:#f0f0f0}
+#app{display:flex;flex-direction:column;height:100vh}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;flex-shrink:0;z-index:600;transition:background .3s,border-color .3s}
+body.dark .topbar{background:#0f0f0f;border-bottom:1px solid #1e1e1e}
+body.light .topbar{background:#fff;border-bottom:1px solid #e0e0e0}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.topbar-title{font-size:14px;font-weight:800;letter-spacing:2px;text-transform:uppercase;transition:color .3s}
+body.dark .topbar-title{color:#fff}
+body.light .topbar-title{color:#111}
+.topbar-back{font-size:12px;text-decoration:none;letter-spacing:.5px;transition:color .15s}
+body.dark .topbar-back{color:#555}
+body.light .topbar-back{color:#999}
+body.dark .topbar-back:hover{color:#fff}
+body.light .topbar-back:hover{color:#111}
+.counter{font-size:11px;font-weight:600;letter-spacing:.5px;transition:color .3s}
+body.dark .counter{color:#444}
+body.light .counter{color:#bbb}
+.topbar-right{display:flex;align-items:center;gap:8px}
+
+/* BUTTONS */
+.icon-btn{width:36px;height:36px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s}
+body.dark .icon-btn{background:#1a1a1a;color:#888}
+body.light .icon-btn{background:#f0f0f0;color:#888}
+body.dark .icon-btn:hover{background:#222;color:#fff}
+body.light .icon-btn:hover{background:#e0e0e0;color:#111}
+.add-btn{display:flex;align-items:center;gap:8px;padding:9px 18px;border:none;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all .15s}
+body.dark .add-btn{background:#fff;color:#0a0a0a}
+body.light .add-btn{background:#111;color:#fff}
+body.dark .add-btn:hover{background:#ddd}
+body.light .add-btn:hover{background:#333}
+
+/* MAP */
+#map{flex:1;width:100%}
+
+/* CLUSTER CUSTOM STYLES */
+body.dark .marker-cluster-small,.marker-cluster-small div{background:rgba(255,255,255,.15)!important}
+body.dark .marker-cluster-medium,.marker-cluster-medium div{background:rgba(255,255,255,.25)!important}
+body.dark .marker-cluster-large,.marker-cluster-large div{background:rgba(255,255,255,.35)!important}
+body.light .marker-cluster-small,.marker-cluster-small div{background:rgba(0,0,0,.1)!important}
+body.light .marker-cluster-medium,.marker-cluster-medium div{background:rgba(0,0,0,.18)!important}
+body.light .marker-cluster-large,.marker-cluster-large div{background:rgba(0,0,0,.25)!important}
+.marker-cluster span{font-weight:800!important;font-size:12px!important}
+body.dark .marker-cluster span{color:#fff!important}
+body.light .marker-cluster span{color:#111!important}
+
+/* LEGEND */
+#legend{position:absolute;bottom:24px;left:20px;z-index:1000;border-radius:10px;padding:12px 16px;max-height:280px;overflow-y:auto;transition:all .3s}
+body.dark #legend{background:rgba(10,10,10,.92);border:1px solid #1e1e1e}
+body.light #legend{background:rgba(255,255,255,.92);border:1px solid #e0e0e0;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.legend-title{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;transition:color .3s}
+body.dark .legend-title{color:#444}
+body.light .legend-title{color:#bbb}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:11px;margin-bottom:6px;cursor:pointer;transition:color .12s}
+body.dark .legend-item{color:#666}
+body.light .legend-item{color:#aaa}
+body.dark .legend-item:hover{color:#fff}
+body.light .legend-item:hover{color:#111}
+.legend-item.active{font-weight:700}
+body.dark .legend-item.active{color:#fff}
+body.light .legend-item.active{color:#111}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* FORM PANEL */
+#form-panel{position:absolute;top:64px;right:20px;z-index:1000;border-radius:12px;padding:20px;width:300px;display:none;transition:all .3s}
+body.dark #form-panel{background:#111;border:1px solid #222}
+body.light #form-panel{background:#fff;border:1px solid #e0e0e0;box-shadow:0 8px 32px rgba(0,0,0,.1)}
+#form-panel h3{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;transition:color .3s}
+body.dark #form-panel h3{color:#444}
+body.light #form-panel h3{color:#bbb}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;transition:color .3s}
+body.dark .fg label{color:#444}
+body.light .fg label{color:#bbb}
+.fg input,.fg select{width:100%;border-radius:6px;padding:9px 11px;font-size:13px;outline:none;transition:all .15s}
+body.dark .fg input,body.dark .fg select{background:#1a1a1a;border:1px solid #2a2a2a;color:#fff}
+body.light .fg input,body.light .fg select{background:#f7f7f7;border:1px solid #e0e0e0;color:#111}
+body.dark .fg input:focus,body.dark .fg select:focus{border-color:#fff}
+body.light .fg input:focus,body.light .fg select:focus{border-color:#111}
+body.dark .fg select option{background:#1a1a1a}
+body.light .fg select option{background:#fff}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.form-actions{display:flex;gap:8px;margin-top:16px}
+.btn-cancel{flex:1;padding:9px;border-radius:6px;font-size:12px;cursor:pointer;transition:all .12s}
+body.dark .btn-cancel{background:transparent;border:1px solid #222;color:#555}
+body.light .btn-cancel{background:transparent;border:1px solid #e0e0e0;color:#aaa}
+body.dark .btn-cancel:hover{border-color:#444;color:#aaa}
+body.light .btn-cancel:hover{border-color:#bbb;color:#666}
+.btn-ok{flex:1;padding:9px;border:none;border-radius:6px;font-size:12px;font-weight:800;cursor:pointer;transition:all .12s}
+body.dark .btn-ok{background:#fff;color:#0a0a0a}
+body.light .btn-ok{background:#111;color:#fff}
+body.dark .btn-ok:hover{background:#ddd}
+body.light .btn-ok:hover{background:#333}
+.err{border-color:#ff4444!important}
+.hint{font-size:10px;line-height:1.5;margin-top:6px;transition:color .3s}
+body.dark .hint{color:#3a3a3a}
+body.light .hint{color:#ccc}
+
+/* POPUPS */
+.leaflet-popup-content-wrapper{border-radius:10px!important;box-shadow:0 12px 40px rgba(0,0,0,.3)!important;padding:0!important}
+body.dark .leaflet-popup-content-wrapper{background:#111!important;border:1px solid #2a2a2a!important;box-shadow:0 12px 40px rgba(0,0,0,.8)!important}
+body.light .leaflet-popup-content-wrapper{background:#fff!important;border:1px solid #e8e8e8!important}
+.leaflet-popup-content{margin:0!important;padding:0!important}
+.leaflet-popup-tip-container{display:none}
+.leaflet-popup-close-button{top:10px!important;right:12px!important;font-size:18px!important;width:20px!important;height:20px!important}
+body.dark .leaflet-popup-close-button{color:#444!important}
+body.light .leaflet-popup-close-button{color:#ccc!important}
+body.dark .leaflet-popup-close-button:hover{color:#fff!important;background:none!important}
+body.light .leaflet-popup-close-button:hover{color:#111!important;background:none!important}
+.rap-popup{padding:16px 18px;min-width:200px}
+.rap-popup-name{font-size:16px;font-weight:800;margin-bottom:3px;padding-right:20px;transition:color .3s}
+body.dark .rap-popup-name{color:#fff}
+body.light .rap-popup-name{color:#111}
+.rap-popup-city{font-size:12px;margin-bottom:10px;display:flex;align-items:center;gap:5px;transition:color .3s}
+body.dark .rap-popup-city{color:#555}
+body.light .rap-popup-city{color:#aaa}
+.rap-popup-style{display:inline-block;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px}
+.rap-popup-link{display:flex;align-items:center;gap:6px;font-size:11px;text-decoration:none;border-top:1px solid;padding-top:10px;transition:color .12s;letter-spacing:.3px}
+body.dark .rap-popup-link{color:#444;border-top-color:#1e1e1e}
+body.light .rap-popup-link{color:#ccc;border-top-color:#f0f0f0}
+body.dark .rap-popup-link:hover{color:#fff}
+body.light .rap-popup-link:hover{color:#111}
+
+/* LEAFLET OVERRIDES */
+.leaflet-control-zoom{border-radius:8px!important;overflow:hidden}
+body.dark .leaflet-control-zoom{border:1px solid #222!important}
+body.light .leaflet-control-zoom{border:1px solid #e0e0e0!important}
+body.dark .leaflet-control-zoom a{background:#111!important;color:#aaa!important;border-bottom:1px solid #1e1e1e!important}
+body.light .leaflet-control-zoom a{background:#fff!important;color:#666!important;border-bottom:1px solid #e0e0e0!important}
+body.dark .leaflet-control-zoom a:hover{background:#1e1e1e!important;color:#fff!important}
+body.light .leaflet-control-zoom a:hover{background:#f0f0f0!important;color:#111!important}
+.leaflet-bar{border:none!important}
+.leaflet-attribution-flag{display:none!important}
+.leaflet-control-attribution{font-size:9px!important}
+body.dark .leaflet-control-attribution{background:rgba(0,0,0,.5)!important;color:#333!important}
+body.light .leaflet-control-attribution{background:rgba(255,255,255,.7)!important;color:#bbb!important}
+body.dark .leaflet-control-attribution a{color:#444!important}
+body.light .leaflet-control-attribution a{color:#bbb!important}
+
+/* TOAST */
+.toast{position:absolute;bottom:24px;right:20px;z-index:2000;border-radius:8px;padding:10px 16px;font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none}
+body.dark .toast{background:#1a1a1a;border:1px solid #2a2a2a;color:#fff}
+body.light .toast{background:#111;color:#fff}
+.toast.show{opacity:1}
+
+/* FILTER BAR */
+#filter-bar{position:absolute;top:64px;left:20px;z-index:999;display:flex;gap:6px;flex-wrap:wrap;max-width:500px}
+.filter-chip{padding:5px 12px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .12s;text-transform:uppercase}
+body.dark .filter-chip{border:1px solid #222;background:rgba(10,10,10,.85);color:#555}
+body.light .filter-chip{border:1px solid #ddd;background:rgba(255,255,255,.85);color:#aaa}
+body.dark .filter-chip:hover{border-color:#444;color:#aaa}
+body.light .filter-chip:hover{border-color:#bbb;color:#666}
+.filter-chip.on{color:#000 !important;border-color:transparent}
+</style>
+</head>
+<body class="dark">
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <a class="topbar-back" href="index.html">← The Dictionary of Rap</a>
+      <span class="topbar-title">Rap World Map</span>
+      <span class="counter" id="counter">0 rappeur</span>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="theme-btn" title="Changer de thème">🌙</button>
+      <button class="add-btn" id="add-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Ajouter un rappeur
+      </button>
+    </div>
+  </div>
+  <div id="map"></div>
+</div>
+
+<div id="filter-bar"></div>
+<div id="legend"><div class="legend-title">Styles</div><div id="legend-items"></div></div>
+
+<div id="form-panel">
+  <h3>Nouveau rappeur</h3>
+  <div class="fg"><label>Nom / Artiste</label><input id="f-name" type="text" placeholder="Ex: Nas"></div>
+  <div class="fg"><label>Ville</label><input id="f-city" type="text" placeholder="Ex: Queensbridge, NY"></div>
+  <div class="fg fg-row">
+    <div><label>Latitude</label><input id="f-lat" type="number" step="0.0001" placeholder="40.7484"></div>
+    <div><label>Longitude</label><input id="f-lng" type="number" step="0.0001" placeholder="-73.9474"></div>
+  </div>
+  <div class="fg">
+    <label>Style</label>
+    <select id="f-style">
+      <option>Trap</option><option>Boom Bap</option><option>West Coast</option>
+      <option>Drill</option><option>Cloud Rap</option><option>Conscient</option>
+      <option>Gangsta Rap</option><option>Rap FR</option><option>UK Drill</option>
+      <option>Grime</option><option>Autre</option>
+    </select>
+  </div>
+  <p class="hint">💡 Google Maps → clic droit sur la ville → coordonnées</p>
+  <div class="form-actions">
+    <button class="btn-cancel" id="cancel-btn">Annuler</button>
+    <button class="btn-ok" id="ok-btn">Placer sur la carte</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STYLES = {
+  'Trap':'#ff3b3b','Boom Bap':'#3b8fff','West Coast':'#ffaa00',
+  'Drill':'#cc44ff','Cloud Rap':'#00d4ff','Conscient':'#00ff88',
+  'Gangsta Rap':'#ff6600','Rap FR':'#ff3fa0','UK Drill':'#aa44ff',
+  'Grime':'#00ffcc','Autre':'#888888'
+};
+
+const DARK_TILES = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const LIGHT_TILES = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+const ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>';
+
+const safeLS = (() => {
+  try{localStorage.setItem('_t','1');localStorage.removeItem('_t');return localStorage;}
+  catch(e){const m={};return{getItem:k=>m[k]??null,setItem:(k,v)=>{m[k]=v;},removeItem:k=>{delete m[k];}}}
+})();
+
+let isDark = safeLS.getItem('rap_map_theme') !== 'light';
+let activeFilter = null;
+
+function loadCustom(){try{return JSON.parse(safeLS.getItem('rap_map_v2')||'[]');}catch(e){return[];}}
+function saveCustom(arr){safeLS.setItem('rap_map_v2',JSON.stringify(arr));}
+
+let rappers = loadCustom();
+
+const map = L.map('map',{zoomControl:false}).setView([25,10],2);
+L.control.zoom({position:'topright'}).addTo(map);
+
+let tileLayer = L.tileLayer(isDark ? DARK_TILES : LIGHT_TILES,{attribution:ATTR,subdomains:'abcd',maxZoom:19}).addTo(map);
+
+let clusterGroup = null;
+
+function makeIcon(style){
+  const c = STYLES[style]||'#888';
+  const glow = isDark ? `box-shadow:0 0 10px ${c}66` : `box-shadow:0 2px 6px ${c}55`;
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:11px;height:11px;background:${c};border-radius:50%;border:2px solid ${isDark?'rgba(255,255,255,.15)':'rgba(0,0,0,.15)'};${glow}"></div>`,
+    iconSize:[11,11],iconAnchor:[5,5],popupAnchor:[0,-8]
+  });
+}
+
+function popupHTML(r){
+  const c=STYLES[r.style]||'#888';
+  return `<div class="rap-popup">
+    <div class="rap-popup-name">${r.name}</div>
+    <div class="rap-popup-city"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.4"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>${r.city}</div>
+    <span class="rap-popup-style" style="background:${c}22;color:${c};border:1px solid ${c}44">${r.style}</span>
+    <a class="rap-popup-link" href="index.html">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+      Voir dans The Dictionary of Rap
+    </a>
+  </div>`;
+}
+
+function renderAll(){
+  if(clusterGroup) map.removeLayer(clusterGroup);
+
+  clusterGroup = L.markerClusterGroup({
+    maxClusterRadius: 50,
+    iconCreateFunction: function(cluster){
+      const count = cluster.getChildCount();
+      const size = count < 10 ? 32 : count < 50 ? 40 : 48;
+      const bg = isDark ? 'rgba(255,255,255,.12)' : 'rgba(0,0,0,.1)';
+      const border = isDark ? 'rgba(255,255,255,.2)' : 'rgba(0,0,0,.15)';
+      const textColor = isDark ? '#fff' : '#111';
+      return L.divIcon({
+        html:`<div style="width:${size}px;height:${size}px;background:${bg};border:1.5px solid ${border};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:${textColor};backdrop-filter:blur(4px)">${count}</div>`,
+        className:'',iconSize:[size,size],iconAnchor:[size/2,size/2]
+      });
+    },
+    spiderfyOnMaxZoom:true,
+    showCoverageOnHover:false,
+    zoomToBoundsOnClick:true
+  });
+
+  const filtered = activeFilter ? rappers.filter(r=>r.style===activeFilter) : rappers;
+  filtered.forEach(r=>{
+    const m = L.marker([r.lat,r.lng],{icon:makeIcon(r.style)})
+      .bindPopup(popupHTML(r),{maxWidth:260,className:''});
+    clusterGroup.addLayer(m);
+  });
+  map.addLayer(clusterGroup);
+  document.getElementById('counter').textContent = rappers.length+' rappeur'+(rappers.length!==1?'s':'');
+}
+
+function buildLegend(){
+  const used=[...new Set(rappers.map(r=>r.style))].sort();
+  document.getElementById('legend-items').innerHTML=used.map(s=>{
+    const c=STYLES[s]||'#888',on=activeFilter===s;
+    return `<div class="legend-item${on?' active':''}" onclick="toggleFilter('${s}')">
+      <div class="legend-dot" style="background:${c};box-shadow:0 0 5px ${c}55"></div>${s}
+    </div>`;
+  }).join('');
+  document.getElementById('filter-bar').innerHTML=used.map(s=>{
+    const c=STYLES[s]||'#888',on=activeFilter===s;
+    return `<div class="filter-chip${on?' on':''}" onclick="toggleFilter('${s}')" style="${on?`background:${c}`:''}"> ${s}</div>`;
+  }).join('');
+  document.getElementById('legend').style.display=used.length?'block':'none';
+}
+
+function toggleFilter(style){
+  activeFilter=activeFilter===style?null:style;
+  renderAll(); buildLegend();
+}
+
+// Theme
+function applyTheme(){
+  document.body.className = isDark ? 'dark' : 'light';
+  document.getElementById('theme-btn').textContent = isDark ? '🌙' : '☀️';
+  map.removeLayer(tileLayer);
+  tileLayer = L.tileLayer(isDark?DARK_TILES:LIGHT_TILES,{attribution:ATTR,subdomains:'abcd',maxZoom:19}).addTo(map);
+  renderAll();
+}
+document.getElementById('theme-btn').onclick=()=>{
+  isDark=!isDark;
+  safeLS.setItem('rap_map_theme',isDark?'dark':'light');
+  applyTheme();
+};
+
+// Form
+document.getElementById('add-btn').onclick=()=>{
+  const p=document.getElementById('form-panel');
+  p.style.display=p.style.display==='block'?'none':'block';
+};
+document.getElementById('cancel-btn').onclick=()=>{
+  document.getElementById('form-panel').style.display='none';
+};
+document.getElementById('ok-btn').onclick=()=>{
+  const name=document.getElementById('f-name').value.trim();
+  const city=document.getElementById('f-city').value.trim();
+  const lat=parseFloat(document.getElementById('f-lat').value);
+  const lng=parseFloat(document.getElementById('f-lng').value);
+  const style=document.getElementById('f-style').value;
+  ['f-name','f-city','f-lat','f-lng'].forEach(id=>document.getElementById(id).classList.remove('err'));
+  let ok=true;
+  if(!name){document.getElementById('f-name').classList.add('err');ok=false;}
+  if(!city){document.getElementById('f-city').classList.add('err');ok=false;}
+  if(isNaN(lat)){document.getElementById('f-lat').classList.add('err');ok=false;}
+  if(isNaN(lng)){document.getElementById('f-lng').classList.add('err');ok=false;}
+  if(!ok) return;
+  rappers.push({name,city,lat,lng,style});
+  saveCustom(rappers);
+  renderAll(); buildLegend();
+  map.flyTo([lat,lng],8,{duration:1.4});
+  setTimeout(()=>{if(clusterGroup) clusterGroup.zoomToShowLayer(clusterGroup.getLayers()[clusterGroup.getLayers().length-1],()=>{})},1600);
+  ['f-name','f-city','f-lat','f-lng'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('form-panel').style.display='none';
+  showToast(name+' ajouté sur la carte ✓');
+};
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+renderAll();
+buildLegend();
+</script>
+</body>
+</html>
