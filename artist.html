@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Artiste — The Dictionary of Rap</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0f;--surf:#111118;--surf2:#1a1a24;--brd:rgba(255,255,255,.08);--brd2:rgba(255,255,255,.15);--txt:#f0f0f0;--txt2:#a0a0a0;--txt3:#555;--acc:#9b85f5;--grn:#5DCAA5;--amb:#EF9F27;--red:#F09595;--r:12px;--rs:8px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+body.light{--bg:#f5f3ff;--surf:#fff;--surf2:#f0ecfa;--brd:rgba(0,0,0,.08);--brd2:rgba(0,0,0,.15);--txt:#1a1a1a;--txt2:#666;--txt3:#bbb;--acc:#5E43CE}
+
+/* BG */
+#bg-grain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:180px}
+#bg-vignette{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.6) 100%)}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(10,10,15,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--brd);padding:12px 20px;display:flex;align-items:center;gap:12px}
+body.light .topbar{background:rgba(255,255,255,.88);border-bottom:1px solid rgba(94,67,206,.12)}
+.back-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--rs);border:1px solid var(--brd2);background:transparent;color:var(--txt2);font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;text-decoration:none;transition:all .2s}
+.back-btn:hover{border-color:var(--acc);color:var(--acc);background:rgba(155,133,245,.08)}
+.topbar-title{font-size:13px;font-weight:700;color:var(--txt2);letter-spacing:1px;text-transform:uppercase}
+.theme-btn{margin-left:auto;padding:7px 10px;border-radius:var(--rs);border:1px solid var(--brd);background:transparent;color:var(--txt2);font-size:14px;cursor:pointer;transition:all .2s}
+.theme-btn:hover{border-color:var(--acc);color:var(--acc)}
+
+/* HERO */
+.hero{position:relative;padding:48px 24px 40px;max-width:900px;margin:0 auto;display:flex;align-items:flex-end;gap:32px;z-index:1}
+.artist-photo-wrap{position:relative;flex-shrink:0}
+.artist-photo{width:140px;height:140px;border-radius:50%;object-fit:cover;border:3px solid var(--brd2);box-shadow:0 8px 40px rgba(0,0,0,.6),0 0 0 1px rgba(155,133,245,.2)}
+.artist-photo-ph{width:140px;height:140px;border-radius:50%;background:var(--surf2);border:3px dashed var(--brd2);display:flex;align-items:center;justify-content:center;font-size:48px;cursor:pointer;transition:border-color .2s}
+.artist-photo-ph:hover{border-color:var(--acc)}
+.photo-edit-btn{position:absolute;bottom:4px;right:4px;width:30px;height:30px;border-radius:50%;background:var(--acc);border:2px solid var(--bg);color:#fff;font-size:13px;cursor:pointer;display:none;align-items:center;justify-content:center;transition:transform .2s}
+.photo-edit-btn:hover{transform:scale(1.1)}
+.admin-mode .photo-edit-btn{display:flex}
+.hero-info{flex:1;min-width:0}
+.artist-name{font-size:clamp(28px,5vw,48px);font-weight:900;letter-spacing:-1px;line-height:1;background:linear-gradient(135deg,#f0f0f0 0%,#c4b5fd 60%,#9b85f5 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+body.light .artist-name{background:linear-gradient(135deg,#1a1a1a 0%,#5E43CE 100%);-webkit-background-clip:text;background-clip:text}
+.artist-style{font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc);margin-top:6px}
+.artist-bio{font-size:14px;color:var(--txt2);margin-top:10px;line-height:1.65;max-width:540px}
+.bio-edit-btn{display:none;margin-top:8px;padding:5px 12px;border-radius:var(--rs);border:1px solid var(--acc);background:transparent;color:var(--acc);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.bio-edit-btn:hover{background:rgba(155,133,245,.1)}
+.admin-mode .bio-edit-btn{display:inline-flex}
+.bio-textarea{width:100%;max-width:540px;margin-top:8px;padding:10px 12px;border:1px solid var(--acc);border-radius:var(--rs);background:rgba(255,255,255,.05);color:var(--txt);font-size:14px;font-family:inherit;line-height:1.65;resize:vertical;min-height:80px;outline:none}
+.bio-save{margin-top:6px;padding:6px 14px;border:none;border-radius:var(--rs);background:var(--acc);color:#fff;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.bio-save:hover{filter:brightness(1.1)}
+
+/* STATS ROW */
+.stats-row{max-width:900px;margin:0 auto 32px;padding:0 24px;display:flex;gap:12px;flex-wrap:wrap;position:relative;z-index:1}
+.stat-card{background:rgba(26,26,36,.8);border:1px solid var(--brd);border-radius:var(--r);padding:14px 18px;flex:1;min-width:120px;backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05)}
+body.light .stat-card{background:rgba(255,255,255,.82);border:1px solid rgba(94,67,206,.1);box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.stat-val{font-size:26px;font-weight:800}
+.stat-lbl{font-size:11px;color:var(--txt2);margin-top:3px;letter-spacing:.3px}
+
+/* TIMELINE */
+.section{max-width:900px;margin:0 auto;padding:0 24px 60px;position:relative;z-index:1}
+.section-title{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--txt3);margin-bottom:28px;display:flex;align-items:center;gap:12px}
+.section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--brd2),transparent)}
+.timeline{position:relative;padding-left:24px}
+.timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--acc),rgba(155,133,245,.1))}
+.timeline-item{position:relative;margin-bottom:32px;cursor:pointer}
+.timeline-item::before{content:'';position:absolute;left:-28px;top:20px;width:10px;height:10px;border-radius:50%;background:var(--acc);border:2px solid var(--bg);box-shadow:0 0 8px rgba(155,133,245,.5);transition:transform .2s,box-shadow .2s}
+.timeline-item:hover::before{transform:scale(1.4);box-shadow:0 0 16px rgba(155,133,245,.7)}
+.timeline-card{display:flex;gap:16px;align-items:flex-start;background:rgba(26,26,36,.75);border:1px solid var(--brd);border-radius:var(--r);padding:16px;backdrop-filter:blur(8px);transition:border-color .2s,transform .2s,box-shadow .2s;box-shadow:0 2px 12px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.04)}
+body.light .timeline-card{background:rgba(255,255,255,.82);border:1px solid rgba(94,67,206,.1);box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.timeline-item:hover .timeline-card{border-color:rgba(155,133,245,.3);transform:translateX(4px);box-shadow:0 4px 24px rgba(0,0,0,.4),0 0 0 1px rgba(155,133,245,.1)}
+.timeline-year{position:absolute;left:-80px;top:18px;font-size:11px;font-weight:800;color:var(--txt3);letter-spacing:.5px;text-align:right;width:44px}
+.album-cover{width:72px;height:72px;border-radius:8px;object-fit:cover;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.album-cover-ph{width:72px;height:72px;border-radius:8px;background:var(--surf2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px}
+.album-info{flex:1;min-width:0}
+.album-title-text{font-size:16px;font-weight:700;color:var(--txt);margin-bottom:3px}
+.album-year-tag{font-size:11px;color:var(--txt3);margin-bottom:8px}
+.album-score-big{font-size:22px;font-weight:800;flex-shrink:0;text-align:right}
+.score-bar{width:60px;height:3px;background:var(--surf2);border-radius:2px;margin-top:4px;overflow:hidden;margin-left:auto}
+.score-bar-f{height:100%;border-radius:2px}
+.track-preview{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.track-pill{font-size:10px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid var(--brd);color:var(--txt2);white-space:nowrap}
+body.light .track-pill{background:rgba(0,0,0,.04)}
+.track-pill.best{border-color:rgba(155,133,245,.4);color:var(--acc);background:rgba(155,133,245,.08)}
+
+/* BEST TRACKS */
+.best-tracks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.bt-card{background:rgba(26,26,36,.75);border:1px solid var(--brd);border-radius:var(--rs);padding:12px 14px;backdrop-filter:blur(8px);transition:border-color .2s}
+.bt-card:hover{border-color:rgba(155,133,245,.3)}
+body.light .bt-card{background:rgba(255,255,255,.82);border:1px solid rgba(94,67,206,.1)}
+.bt-track{font-size:13px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bt-album{font-size:11px;color:var(--txt3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bt-score{font-size:18px;font-weight:800;margin-top:6px}
+
+/* COLORS */
+.se{color:#5DCAA5}.sg{color:#9b85f5}.so{color:#EF9F27}.sl{color:#F09595}.sn{color:var(--txt3)}
+.be{background:#5DCAA5}.bg2{background:#9b85f5}.bo{background:#EF9F27}.bl{background:#F09595}
+
+/* PHOTO MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:20px}
+.ov.open{display:flex}
+.photo-mdl{background:var(--surf);border:1px solid var(--brd2);border-radius:var(--r);padding:22px;width:100%;max-width:400px;box-shadow:0 24px 80px rgba(0,0,0,.8)}
+.photo-mdl h3{font-size:15px;font-weight:700;margin-bottom:14px}
+.fi{width:100%;padding:9px 12px;border:1px solid var(--brd2);border-radius:var(--rs);background:rgba(255,255,255,.05);color:var(--txt);font-size:13px;outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--acc)}
+.macts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.btn{padding:8px 18px;border-radius:var(--rs);font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;border:1px solid var(--brd2);background:transparent;color:var(--txt2);transition:all .2s}
+.btn:hover{border-color:var(--brd);color:var(--txt)}
+.btn-p{background:linear-gradient(135deg,var(--acc),#7c5ce8);color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(94,67,206,.4)}
+.btn-p:hover{filter:brightness(1.1);transform:translateY(-1px)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(155,133,245,.3);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:rgba(155,133,245,.55)}
+
+@media(max-width:600px){
+  .hero{flex-direction:column;align-items:center;text-align:center;padding:32px 16px 24px;gap:20px}
+  .artist-bio{margin:0 auto}
+  .timeline{padding-left:16px}
+  .timeline-year{display:none}
+  .section{padding-left:16px;padding-right:16px}
+  .stats-row{padding:0 16px}
+}
+</style>
+</head>
+<body>
+<div id="bg-grain"></div>
+<div id="bg-vignette"></div>
+
+<div class="topbar">
+  <a class="back-btn" href="index.html">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    The Dictionary of Rap
+  </a>
+  <span class="topbar-title" id="topbar-artist-name"></span>
+  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
+</div>
+
+<div class="hero">
+  <div class="artist-photo-wrap">
+    <div id="photo-container"></div>
+    <button class="photo-edit-btn" onclick="openPhotoModal()" title="Changer la photo">✏️</button>
+  </div>
+  <div class="hero-info">
+    <div class="artist-name" id="hero-name">—</div>
+    <div class="artist-style" id="hero-style"></div>
+    <div class="artist-bio" id="hero-bio"></div>
+    <button class="bio-edit-btn" onclick="editBio()">✏️ Modifier la bio</button>
+  </div>
+</div>
+
+<div class="stats-row" id="stats-row"></div>
+
+<div class="section">
+  <div class="section-title">Discographie</div>
+  <div class="timeline" id="timeline"></div>
+</div>
+
+<div class="section">
+  <div class="section-title">Meilleurs morceaux</div>
+  <div class="best-tracks-grid" id="best-tracks"></div>
+</div>
+
+<!-- PHOTO MODAL -->
+<div class="ov" id="photo-modal" onclick="if(event.target===this)closePhotoModal()">
+  <div class="photo-mdl">
+    <h3>📸 Photo de l'artiste</h3>
+    <div style="margin-bottom:10px">
+      <label style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--txt3);display:block;margin-bottom:6px">URL de l'image</label>
+      <input class="fi" id="photo-url" type="text" placeholder="https://…">
+    </div>
+    <p style="font-size:11px;color:var(--txt3);margin-bottom:4px">💡 Google Images → clic droit → Copier l'adresse de l'image</p>
+    <div class="macts">
+      <button class="btn" onclick="closePhotoModal()">Annuler</button>
+      <button class="btn btn-p" onclick="savePhoto()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SAFE STORAGE
+const safeLS = (()=>{
+  try{localStorage.setItem('_t','1');localStorage.removeItem('_t');return localStorage;}
+  catch(e){const m={};return{getItem:k=>m[k]??null,setItem:(k,v)=>{m[k]=v;},removeItem:k=>{delete m[k];}};}
+})();
+
+// ── ADMIN CHECK
+const isAdmin = safeLS.getItem('hiphop_admin') === 'yes';
+if (isAdmin) document.body.classList.add('admin-mode');
+
+// ── THEME
+function initTheme(){
+  const t = safeLS.getItem('hiphop_theme');
+  const dark = t ? t==='dark' : window.matchMedia('(prefers-color-scheme:dark)').matches;
+  document.body.classList.toggle('light', !dark);
+  document.getElementById('theme-btn').textContent = dark ? '☀️' : '🌙';
+}
+function toggleTheme(){
+  const isLight = document.body.classList.contains('light');
+  document.body.classList.toggle('light', !isLight);
+  safeLS.setItem('hiphop_theme', isLight ? 'dark' : 'light');
+  document.getElementById('theme-btn').textContent = isLight ? '☀️' : '🌙';
+}
+
+// ── SCORE HELPERS
+function sc(s){return s==null?'sn':s>=8.5?'se':s>=7.5?'sg':s>=6.5?'so':'sl'}
+function bc(s){return s==null?'':s>=8.5?'be':s>=7.5?'bg2':s>=6.5?'bo':'bl'}
+function ss(s){return s==null?'—':s.toFixed(2)}
+function sp(s){return s==null?0:Math.min(100,((s-4)/6)*100)}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// ── LOAD DATA from index.html via postMessage or URL param
+// Artist name passed via URL: artist.html?name=Nas
+function getArtistParam(){
+  const p = new URLSearchParams(window.location.search);
+  return decodeURIComponent(p.get('name') || '');
+}
+
+// ── ARTIST EXTRA DATA (photo, bio) stored in localStorage
+function getArtistData(name){
+  try{ return JSON.parse(safeLS.getItem('artist_'+name) || '{}'); }catch(e){return {};}
+}
+function saveArtistData(name, data){
+  safeLS.setItem('artist_'+name, JSON.stringify(data));
+}
+
+// ── GET ALBUMS from parent index.html localStorage
+function getAllAlbums(){
+  // Try hiphop_changes first, fall back to empty
+  const ch = JSON.parse(safeLS.getItem('hiphop_changes') || '{"edits":{},"additions":[],"deletions":[]}');
+  // We need INITIAL_DATA too — fetch index.html and parse it
+  // For now use what's in localStorage additions + base
+  return ch.additions || [];
+}
+
+// ── MAIN: load artist page
+const artistName = getArtistParam();
+let allAlbums = [];
+
+// Fetch albums from index.html (same origin)
+async function loadAlbumsFromIndex(){
+  try {
+    const resp = await fetch('index.html');
+    const text = await resp.text();
+    const match = text.match(/const INITIAL_DATA = (\[[\s\S]*?\]);\s*\nconst ADMIN_PASSWORD/);
+    if (!match) return [];
+    const base = JSON.parse(match[1]);
+    // Merge with localStorage changes
+    const ch = JSON.parse(safeLS.getItem('hiphop_changes') || '{"edits":{},"additions":[],"deletions":[]}');
+    let merged = base
+      .filter(a => !ch.deletions.includes(a.id))
+      .map(a => ch.edits[a.id] ? {...a, ...ch.edits[a.id]} : a);
+    merged = merged.concat(ch.additions || []);
+    return merged;
+  } catch(e) {
+    console.error('Could not load index.html', e);
+    return [];
+  }
+}
+
+function renderPage(albums){
+  // Filter albums for this artist (includes collabs)
+  const artistAlbums = albums.filter(a =>
+    a.artist.toLowerCase().includes(artistName.toLowerCase())
+  ).sort((a,b) => (a.year||9999) - (b.year||9999));
+
+  if (!artistAlbums.length) {
+    document.getElementById('timeline').innerHTML = '<p style="color:var(--txt3);font-size:14px">Aucun album trouvé pour cet artiste.</p>';
+    return;
+  }
+
+  // Artist extra data
+  const extra = getArtistData(artistName);
+
+  // Header
+  document.title = artistName + ' — The Dictionary of Rap';
+  document.getElementById('topbar-artist-name').textContent = artistName;
+  document.getElementById('hero-name').textContent = artistName;
+
+  // Detect dominant style
+  const styleCounts = {};
+  artistAlbums.forEach(a => {
+    const s = a.artist.includes(';') ? 'Collab' : (a.style || '');
+    if(s) styleCounts[s] = (styleCounts[s]||0)+1;
+  });
+
+  // Photo
+  const photoWrap = document.getElementById('photo-container');
+  if (extra.photo) {
+    photoWrap.innerHTML = `<img class="artist-photo" src="${esc(extra.photo)}" onerror="this.outerHTML='<div class=\"artist-photo-ph\" style=\"cursor:${isAdmin?'pointer':'default'}\">${isAdmin?'🎤 Changer':'🎤'}</div>'" alt="${esc(artistName)}">`;
+  } else {
+    photoWrap.innerHTML = `<div class="artist-photo-ph" style="cursor:${isAdmin?'pointer':'default'}">${isAdmin?'📸 Ajouter<br><span style=\"font-size:12px;color:var(--txt3)\">une photo</span>':'🎤'}</div>`;
+  }
+  if (isAdmin) {
+    const ph = photoWrap.querySelector('.artist-photo-ph, .artist-photo');
+    if (ph) ph.onclick = () => openPhotoModal();
+    // Show edit button
+    document.querySelector('.photo-edit-btn').style.display = 'flex';
+    document.querySelector('.bio-edit-btn').style.display = 'inline-flex';
+  }
+
+  // Bio
+  const bioEl = document.getElementById('hero-bio');
+  bioEl.textContent = extra.bio || (isAdmin ? 'Clique sur "Modifier la bio" pour ajouter une biographie.' : '');
+  bioEl.style.fontStyle = extra.bio ? 'normal' : 'italic';
+  bioEl.style.opacity = extra.bio ? '1' : '0.4';
+
+  // Stats
+  const rated = artistAlbums.filter(a => a.avg != null);
+  const avg = rated.length ? rated.reduce((s,a)=>s+a.avg,0)/rated.length : null;
+  const best = rated.length ? rated.reduce((b,a)=>a.avg>b.avg?a:b) : null;
+  const allTracks = artistAlbums.flatMap(a=>a.tracks||[]).filter(t=>t.grade!=null);
+  document.getElementById('stats-row').innerHTML = [
+    {val: artistAlbums.length, lbl: 'Albums'},
+    {val: rated.length, lbl: 'Albums notés'},
+    {val: avg ? `<span class="${sc(avg)}">${avg.toFixed(2)}</span>` : '—', lbl: 'Moyenne'},
+    {val: allTracks.length, lbl: 'Morceaux notés'},
+    best ? {val: `<span class="${sc(best.avg)}">${ss(best.avg)}</span>`, lbl: 'Meilleur album', sub: best.album} : null,
+  ].filter(Boolean).map(s =>
+    `<div class="stat-card"><div class="stat-val">${s.val}</div><div class="stat-lbl">${s.lbl}${s.sub?`<div style="font-size:10px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.sub)}</div>`:''}</div></div>`
+  ).join('');
+
+  // Timeline
+  document.getElementById('timeline').innerHTML = artistAlbums.map(a => {
+    const topTracks = [...(a.tracks||[])].filter(t=>t.grade!=null).sort((x,y)=>y.grade-x.grade).slice(0,3);
+    const pills = topTracks.map((t,i) =>
+      `<span class="track-pill ${i===0?'best':''}">${i===0?'★ ':''}${esc(t.title)} ${t.grade}</span>`
+    ).join('');
+    const cover = a.cover
+      ? `<img class="album-cover" src="${esc(a.cover)}" onerror="this.outerHTML='<div class=album-cover-ph>🎵</div>'" alt="">`
+      : `<div class="album-cover-ph">🎵</div>`;
+
+    return `<div class="timeline-item" onclick="window.location='index.html?album=${encodeURIComponent(a.id)}'">
+      ${a.year ? `<div class="timeline-year">${a.year}</div>` : ''}
+      <div class="timeline-card">
+        ${cover}
+        <div class="album-info">
+          <div class="album-title-text">${esc(a.album)}</div>
+          <div class="album-year-tag">${a.year || 'Année inconnue'}${a.artist !== artistName ? ` · <span style="color:var(--acc)">${esc(a.artist)}</span>` : ''}</div>
+          ${pills ? `<div class="track-preview">${pills}</div>` : ''}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="album-score-big ${sc(a.avg)}">${ss(a.avg)}</div>
+          <div class="score-bar"><div class="score-bar-f ${bc(a.avg)}" style="width:${sp(a.avg)}%"></div></div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:4px">/10</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Best tracks
+  const topTracks = artistAlbums
+    .flatMap(a => (a.tracks||[]).filter(t=>t.grade!=null).map(t=>({...t, albumTitle:a.album})))
+    .sort((a,b)=>b.grade-a.grade).slice(0,12);
+
+  document.getElementById('best-tracks').innerHTML = topTracks.map(t =>
+    `<div class="bt-card">
+      <div class="bt-track">${esc(t.title)}${t.feat?` <span style="color:var(--txt3);font-size:10px">ft. ${esc(t.feat)}</span>`:''}</div>
+      <div class="bt-album">${esc(t.albumTitle)}</div>
+      <div class="bt-score ${sc(t.grade)}">${t.grade}</div>
+    </div>`
+  ).join('');
+}
+
+// ── PHOTO MODAL
+function openPhotoModal(){
+  const extra = getArtistData(artistName);
+  document.getElementById('photo-url').value = extra.photo || '';
+  document.getElementById('photo-modal').classList.add('open');
+}
+function closePhotoModal(){ document.getElementById('photo-modal').classList.remove('open'); }
+function savePhoto(){
+  if(!isAdmin) return;
+  const url = document.getElementById('photo-url').value.trim();
+  const extra = getArtistData(artistName);
+  extra.photo = url || null;
+  saveArtistData(artistName, extra);
+  closePhotoModal();
+  // Update photo directly without full reload
+  const photoWrap = document.getElementById('photo-container');
+  if (url) {
+    photoWrap.innerHTML = `<img class="artist-photo" src="${url}" onerror="this.outerHTML='<div class=artist-photo-ph>🎤</div>'" alt="">`;
+  } else {
+    photoWrap.innerHTML = `<div class="artist-photo-ph" onclick="openPhotoModal()">🎤</div>`;
+  }
+}
+
+// ── BIO EDIT
+function editBio(){
+  if(!isAdmin) return;
+  const extra = getArtistData(artistName);
+  const bioEl = document.getElementById('hero-bio');
+  bioEl.outerHTML = `<textarea class="bio-textarea" id="hero-bio-ta" placeholder="Écris une biographie…">${extra.bio||''}</textarea><button class="bio-save" onclick="saveBio()">Enregistrer</button>`;
+}
+function saveBio(){
+  if(!isAdmin) return;
+  const ta = document.getElementById('hero-bio-ta');
+  if(!ta) return;
+  const text = ta.value.trim();
+  const extra = getArtistData(artistName);
+  extra.bio = text;
+  saveArtistData(artistName, extra);
+  loadAlbumsFromIndex().then(renderPage);
+}
+
+// ── INIT
+if(!artistName){
+  document.body.innerHTML = '<div style="padding:60px;text-align:center;color:#666;font-family:sans-serif">Aucun artiste spécifié.<br><a href="index.html" style="color:#9b85f5">← Retour</a></div>';
+} else {
+  initTheme();
+  // Show edit buttons if admin
+  if (isAdmin) {
+    document.querySelectorAll('.photo-edit-btn, .bio-edit-btn').forEach(el => {
+      el.style.display = 'flex';
+    });
+    // Also make photo placeholder clickable
+    const ph = document.querySelector('.artist-photo-ph');
+    if (ph) ph.onclick = openPhotoModal;
+  }
+  loadAlbumsFromIndex().then(renderPage);
+}
+</script>
+</body>
+</html>
